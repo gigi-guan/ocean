@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Ocean Carbon Lab</title>
+<style>
+  :root{
+    --bg:#050816;
+    --bg2:#020617;
+    --card:#0b1220;
+    --card2:#0f172a;
+    --border:rgba(148,163,184,.35);
+    --ink:#e5ecff;
+    --muted:#9ca3c7;
+    --accent:#38bdf8;
+    --accent-soft:rgba(56,189,248,.18);
+    --accent2:#a5f3fc;
+    --danger:#fb7185;
+    --danger-soft:rgba(251,113,133,.16);
+    --success:#4ade80;
+    --success-soft:rgba(74,222,128,.14);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Text",Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(circle at 50% -10%, #1d4ed8 0, transparent 55%),
+      radial-gradient(circle at 10% -20%, #22d3ee33 0, transparent 50%),
+      linear-gradient(180deg,var(--bg),var(--bg2));
+    color:var(--ink);
+    min-height:100vh;
+  }
+
+  header{
+    padding:28px 16px 10px;
+    text-align:center;
+  }
+  header h1{
+    font-size:2.4rem;
+    letter-spacing:.03em;
+    margin-bottom:6px;
+  }
+  header p{
+    max-width:640px;
+    margin:0 auto;
+    color:var(--muted);
+    font-size:.98rem;
+  }
+
+  .wrap{
+    max-width:1100px;
+    margin:0 auto;
+    padding:24px 16px 60px;
+  }
+
+  .lab-card{
+    background:radial-gradient(circle at top left,#1d283a 0,transparent 55%),var(--card);
+    border-radius:22px;
+    border:1px solid var(--border);
+    box-shadow:0 24px 80px rgba(15,23,42,.9);
+    padding:22px 20px 20px;
+    margin-bottom:26px;
+  }
+  .lab-label{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:.72rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--muted);
+    padding:4px 10px;
+    border-radius:999px;
+    border:1px solid rgba(148,163,184,.4);
+    background:rgba(15,23,42,.8);
+    margin-bottom:10px;
+  }
+  .lab-label span.dot{
+    width:6px;height:6px;border-radius:999px;
+    background:linear-gradient(135deg,#22d3ee,#818cf8);
+  }
+  .lab-card h2{
+    font-size:1.45rem;
+    margin-bottom:6px;
+  }
+  .lab-card p.lead{
+    color:var(--muted);
+    font-size:.92rem;
+    margin-bottom:14px;
+  }
+
+  .lab-grid{
+    display:grid;
+    gap:18px;
+  }
+  @media(min-width:900px){
+    .lab-grid{
+      grid-template-columns:minmax(0,6fr) minmax(0,5fr);
+      align-items:stretch;
+    }
+  }
+
+  /* sliders + pills */
+  .control-block{
+    margin-bottom:18px;
+  }
+  .control-block h3{
+    font-size:.98rem;
+    margin-bottom:6px;
+  }
+  .control-block label{
+    font-size:.86rem;
+    color:var(--muted);
+    display:block;
+    margin-bottom:6px;
+  }
+  input[type="range"]{
+    width:100%;
+    accent-color:var(--accent);
+  }
+  .slider-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .pill{
+    margin-left:auto;
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:.78rem;
+    border:1px solid rgba(148,163,184,.5);
+    background:rgba(15,23,42,.9);
+    color:var(--muted);
+  }
+  .pill strong{color:var(--ink);font-weight:500;}
+
+  /* pH result card */
+  .ph-card{
+    border-radius:20px;
+    padding:18px 16px;
+    background:linear-gradient(135deg,#1d4ed8,#22d3ee);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    min-height:170px;
+  }
+  .ph-label{
+    font-size:.78rem;
+    text-transform:uppercase;
+    letter-spacing:.16em;
+    opacity:.9;
+    margin-bottom:4px;
+  }
+  .ph-value{
+    font-size:3rem;
+    font-weight:650;
+    text-shadow:0 10px 30px rgba(15,23,42,.65);
+  }
+  .ph-tag{
+    margin-top:6px;
+    padding:3px 10px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.7);
+    font-size:.75rem;
+    background:rgba(15,23,42,.35);
+  }
+  .shell-pill{
+    margin-top:10px;
+    padding:5px 12px;
+    border-radius:999px;
+    font-size:.78rem;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .shell-pill span.dot{
+    width:8px;height:8px;border-radius:999px;background:white;
+  }
+
+  .ph-safe,
+  .status-safe{background:var(--success-soft);color:var(--success);}
+  .ph-risk,
+  .status-risk{background:var(--danger-soft);color:#facc15;}
+  .ph-bad,
+  .status-bad{background:var(--danger-soft);color:var(--danger);}
+
+  .note{
+    font-size:.8rem;
+    color:var(--muted);
+    margin-top:8px;
+  }
+
+  /* -------- Lab 2: Coral bleaching scene -------- */
+  .reef-card{
+    border-radius:18px;
+    padding:12px;
+    background:radial-gradient(circle at top,#020617,#020617);
+    border:1px solid rgba(148,163,184,.45);
+  }
+  .reef-scene{
+    position:relative;
+    height:190px;
+    border-radius:14px;
+    overflow:hidden;
+    background:linear-gradient(180deg,#0f172a,#022c4a);
+  }
+  .reef-seafloor{
+    position:absolute;
+    bottom:0;left:0;right:0;
+    height:42px;
+    background:linear-gradient(180deg,#1f2937,#020617);
+  }
+  .coral{
+    position:absolute;
+    bottom:18px;
+    left:50%;
+    transform:translateX(-50%);
+    width:120px;
+    height:70px;
+    border-radius:60% 60% 0 0;
+  }
+  .coral-base{
+    background:radial-gradient(circle at 30% 10%,#22c1c3,#0ea5e9);
+    filter:drop-shadow(0 10px 25px rgba(15,23,42,.9));
+  }
+  .coral-bleached{
+    background:radial-gradient(circle at 30% 10%,#f9fafb,#e5e7eb);
+    opacity:0;
+    mix-blend-mode:screen;
+    transition:opacity .4s ease;
+  }
+  .fish{
+    position:absolute;
+    width:14px;height:8px;
+    border-radius:999px;
+    background:#22c1c3;
+    box-shadow:0 0 0 2px rgba(15,23,42,.7);
+    animation:swim 14s linear infinite;
+    opacity:.9;
+  }
+  .fish::after{
+    content:"";
+    position:absolute;
+    right:-4px;top:3px;
+    width:6px;height:4px;
+    border-radius:0 50% 50% 0;
+    background:#0ea5e9;
+  }
+  .fish.f1{top:40px;left:-30px;animation-duration:18s;}
+  .fish.f2{top:90px;left:-60px;animation-duration:16s;}
+  .fish.f3{top:65px;left:-90px;animation-duration:20s;}
+  .fish.f4{top:120px;left:-50px;animation-duration:22s;}
+
+  @keyframes swim{
+    from{transform:translateX(0);}
+    to{transform:translateX(160%);}
+  }
+
+  .reef-status{
+    margin-top:10px;
+    font-size:.8rem;
+    color:var(--muted);
+  }
+  .reef-status-tag{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:.78rem;
+    margin-right:6px;
+    border:1px solid rgba(148,163,184,.5);
+  }
+  .reef-tag-safe{
+    background:var(--success-soft);
+    color:var(--success);
+  }
+  .reef-tag-stress{
+    background:var(--danger-soft);
+    color:#facc15;
+  }
+  .reef-tag-bleached{
+    background:var(--danger-soft);
+    color:var(--danger);
+  }
+
+  /* Lab 3: Milankovitch orbit sandbox */
+  .orbit-shell{
+    border-radius:20px;
+    background:radial-gradient(circle at 50% -20%,#22c1c399,transparent 55%),#020617;
+    border:1px solid rgba(148,163,184,.5);
+    padding:14px;
+  }
+  .orbit-wrap{
+    display:grid;
+    gap:12px;
+  }
+  @media(min-width:900px){
+    .orbit-wrap{
+      grid-template-columns:minmax(0,6fr) minmax(0,5fr);
+      align-items:center;
+    }
+  }
+  svg{
+    max-width:100%;
+    display:block;
+  }
+  .orbit-caption{
+    font-size:.8rem;
+    color:var(--muted);
+    margin-top:4px;
+  }
+  .insolation-chip{
+    margin-top:10px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:.78rem;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:rgba(15,23,42,.9);
+    border:1px solid rgba(148,163,184,.65);
+  }
+  .insolation-chip strong{font-weight:600;}
+  .insolation-weak{color:var(--muted);border-color:rgba(148,163,184,.6);}
+  .insolation-med{color:var(--accent2);border-color:rgba(56,189,248,.7);}
+  .insolation-strong{color:var(--danger);border-color:rgba(248,113,113,.8);}
+
+  footer{
+    text-align:center;
+    padding:22px 12px 32px;
+    color:var(--muted);
+    font-size:.78rem;
+  }
+
+    /* === ✨ Extra Styling: moving ocean gradient + neon fish + hover glow === */
+    /* ===== FLOATING NEON FISH BACKGROUND ===== */
+    .fish-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+    }
+
+    .fish {
+    position: absolute;
+    width: 60px;
+    height: 30px;
+    border-radius: 50% 50% 40% 40%;
+    background: radial-gradient(circle at 30% 50%, #38bdf8, #1d4ed8);
+    opacity: 0.18;
+    filter: blur(2px);
+
+    top: calc(10% + 70vh * var(--i, 0));
+    left: -80px;
+
+    animation: swim 28s linear infinite;
+    transform: scaleX(1);
+    }
+
+    .fish::after {
+    content: "";
+    position: absolute;
+    right: -18px;
+    top: 7px;
+    width: 22px;
+    height: 12px;
+    border-radius: 40% 100% 40% 100%;
+    background: radial-gradient(circle at 20% 50%, #60a5fa, #1e3a8a);
+    }
+
+    .fish.delay1 { animation-delay: -6s; top: 25%; transform: scale(0.9); }
+    .fish.delay2 { animation-delay: -12s; top: 55%; transform: scale(1.2); }
+    .fish.delay3 { animation-delay: -18s; top: 40%; transform: scale(0.75); }
+    .fish.delay4 { animation-delay: -22s; top: 70%; transform: scale(1.1); }
+
+    @keyframes swim {
+    0%   { transform: translateX(-120px) scaleX(1); }
+    50%  { transform: translateX(50vw) scaleX(1); }
+    100% { transform: translateX(110vw) scaleX(1); }
+    }
+    /* Animate the existing background gradient very gently */
+    body {
+    animation: oceanDrift 45s linear infinite alternate;
+    overflow-x: hidden; /* prevent any animated bits from causing scroll */
+    }
+
+    /* Neon "fish / plankton" blobs drifting behind content */
+    body::before {
+    content: "";
+    position: fixed;
+    inset: -10%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.7;
+    mix-blend-mode: screen;
+    background:
+        radial-gradient(ellipse 32px 14px at 8% 25%, rgba(56,189,248,0.18), transparent 60%),
+        radial-gradient(ellipse 26px 11px at 25% 80%, rgba(129,140,248,0.22), transparent 60%),
+        radial-gradient(ellipse 34px 16px at 55% 15%, rgba(45,212,191,0.22), transparent 60%),
+        radial-gradient(ellipse 24px 10px at 78% 60%, rgba(251,113,133,0.22), transparent 60%),
+        radial-gradient(ellipse 30px 12px at 92% 30%, rgba(94,234,212,0.18), transparent 60%);
+    animation: fishDrift 60s linear infinite;
+    }
+
+    /* Make main content sit above the fish layer */
+    header, .wrap, footer {
+    position: relative;
+    z-index: 1;
+    }
+
+    /* Hover glow on lab cards */
+    .lab-card {
+    position: relative;
+    z-index: 10;
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease,
+        background 0.25s ease;
+    }
+
+    .lab-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 30px 90px rgba(15,23,42,0.95);
+    border-color: rgba(56,189,248,0.7);
+    background:
+        radial-gradient(circle at top left, rgba(56,189,248,0.16) 0, transparent 55%),
+        radial-gradient(circle at bottom right, rgba(129,140,248,0.15) 0, transparent 60%),
+        var(--card);
+    }
+
+    /* Background slow drift of your existing gradients */
+    @keyframes oceanDrift {
+    0% {
+        background-position: 0px 0px, 0px 0px, 0px 0px;
+    }
+    100% {
+        background-position: 0px -80px, -60px -40px, 0px 120px;
+    }
+    }
+
+    /* Neon blobs drifting like schools of tiny fish */
+    @keyframes fishDrift {
+    0% {
+        background-position:
+        0% 0%,
+        40% 100%,
+        60% 0%,
+        90% 70%,
+        100% 10%;
+    }
+    100% {
+        background-position:
+        20% 40%,
+        10% 60%,
+        80% 20%,
+        70% 90%,
+        90% 40%;
+    }
+    }
+</style>
+</head>
+<body>
+    <!-- Floating neon fish background -->
+<div class="fish-layer">
+  <div class="fish"></div>
+  <div class="fish delay1"></div>
+  <div class="fish delay2"></div>
+  <div class="fish delay3"></div>
+  <div class="fish delay4"></div>
+</div>
+<header>
+  <h1>Ocean Carbon Lab</h1>
+  <p>Interactive mini-labs for concepts from EPS 82: ocean acidification, coral bleaching in a warming ocean, and Milankovitch-driven climate cycles.</p>
+</header>
+
+<div class="wrap">
+
+  <!-- LAB 1: pH PANEL -->
+  <section class="lab-card" id="lab1">
+    <div class="lab-label"><span class="dot"></span> Lab 1 · Ocean Acidification</div>
+    <h2>From CO₂ in the Air to pH in the Ocean</h2>
+    <p class="lead">
+      Move the CO₂ slider to see how increasing atmospheric CO₂ pushes surface ocean pH lower
+      and tightens the “safe space” for organisms that build CaCO₃ shells.
+    </p>
+
+    <div class="lab-grid">
+      <div>
+        <div class="control-block">
+          <h3>1. Set the atmosphere</h3>
+          <label for="co2Slider">Atmospheric CO₂ (ppm)</label>
+          <div class="slider-row">
+            <input id="co2Slider" type="range" min="260" max="1200" step="10" value="420">
+            <div class="pill">CO₂: <strong><span id="co2Val">420</span> ppm</strong></div>
+          </div>
+          <p class="note">
+            ~280 ppm ≈ pre-industrial · ~420 ppm ≈ today · 560+ ppm ≈ 2× pre-industrial.
+          </p>
+        </div>
+
+        <div class="control-block">
+          <h3>2. Adjust temperature</h3>
+          <label for="tempSlider">Surface temperature (°C)</label>
+          <div class="slider-row">
+            <input id="tempSlider" type="range" min="0" max="30" step="1" value="18">
+            <div class="pill">T: <strong><span id="tempVal">18</span> °C</strong></div>
+          </div>
+          <p class="note">
+            Colder water can hold more dissolved CO₂ and tends to become more acidic for the same atmospheric CO₂.
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <div class="ph-card" id="phCard">
+          <div class="ph-label">Estimated surface ocean pH</div>
+          <div class="ph-value" id="phValue">8.20</div>
+          <div class="ph-tag" id="phTag">Pre-industrial-like</div>
+          <div class="shell-pill ph-safe" id="shellPill">
+            <span class="dot"></span>
+            Shell habitat: mostly safe for CaCO₃ shells
+          </div>
+        </div>
+        <p class="note">
+          Simple toy model: pH decreases roughly linearly as CO₂ rises, with a small temperature adjustment.
+          The goal is to visualize direction and sensitivity, not exact numbers.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LAB 2: CORAL BLEACHING -->
+  <section class="lab-card" id="lab2">
+    <div class="lab-label"><span class="dot"></span> Lab 2 · Warming Seas & Coral Bleaching</div>
+    <h2>When Hot Oceans Stress Coral Reefs</h2>
+    <p class="lead">
+      Explore how extra ocean warming and more marine heatwave days push corals from healthy to stressed
+      to bleached. Watch the reef scene respond as conditions cross common bleaching thresholds.
+    </p>
+
+    <div class="lab-grid">
+      <div>
+        <div class="control-block">
+          <h3>Heat stress</h3>
+          <label for="heatSlider">Global ocean temperature anomaly (°C above pre-industrial)</label>
+          <div class="slider-row">
+            <input id="heatSlider" type="range" min="0" max="3" step="0.1" value="1.0">
+            <div class="pill">ΔT: <strong><span id="heatVal">1.0</span> °C</strong></div>
+          </div>
+        </div>
+
+        <div class="control-block">
+          <label for="daysSlider">Marine heatwave days per year near this reef</label>
+          <div class="slider-row">
+            <input id="daysSlider" type="range" min="0" max="90" step="1" value="20">
+            <div class="pill">Days: <strong><span id="daysVal">20</span> / yr</strong></div>
+          </div>
+        </div>
+
+        <p class="note">
+          Corals start to bleach when temperatures stay more than about 1&nbsp;°C above their usual summer
+          maximum for weeks. Repeated heatwaves can push reefs from mostly healthy to chronically bleached.
+        </p>
+      </div>
+
+      <div>
+        <div class="reef-card">
+          <div class="reef-scene" id="reefScene">
+            <div class="reef-seafloor"></div>
+            <div class="coral coral-base"></div>
+            <div class="coral coral-bleached" id="coralBleached"></div>
+            <div class="fish f1"></div>
+            <div class="fish f2"></div>
+            <div class="fish f3"></div>
+            <div class="fish f4"></div>
+          </div>
+          <div class="reef-status">
+            <span class="reef-status-tag reef-tag-safe" id="reefStatusTag">Most corals healthy</span>
+            <span id="reefStatusText">
+              Occasional warm events, but most symbiotic algae remain and reefs stay colorful.
+            </span>
+          </div>
+        </div>
+        <p class="note">
+          In reality, bleaching also depends on local stressors (pollution, overfishing, storms) and how much
+          time reefs get to recover between heatwaves, but this toy model captures the basic idea of a
+          warming-threshold response.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LAB 3: MILANKOVITCH ORBIT SANDBOX -->
+  <section class="lab-card" id="lab3">
+    <div class="lab-label"><span class="dot"></span> Lab 3 · Milankovitch Orbit Sandbox</div>
+    <h2>How Earth’s Orbit Modulates High-Latitude Summer</h2>
+    <p class="lead">
+      Play with eccentricity, axial tilt, and precession to see how they change the Earth–Sun geometry and
+      a simple “summer insolation at 65°N” index, which is key for glacial–interglacial cycles.
+    </p>
+
+    <div class="orbit-wrap">
+      <div class="orbit-shell">
+        <!-- Same model as before but globally scaled smaller so it always stays in frame -->
+        <svg id="orbitSvg" viewBox="0 0 260 200">
+          <defs>
+            <radialGradient id="sunGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#facc15"/>
+              <stop offset="60%" stop-color="#f97316"/>
+              <stop offset="100%" stop-color="#b45309"/>
+            </radialGradient>
+            <linearGradient id="earthGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#22c1c3"/>
+              <stop offset="100%" stop-color="#0ea5e9"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Wrapper group scaled down so the whole orbit fits no matter the rotation -->
+          <g id="orbitScene" transform="translate(130,100) scale(0.7) translate(-130,-100)">
+            <!-- Sun -->
+            <circle cx="60" cy="100" r="18" fill="url(#sunGrad)" />
+
+            <!-- Orbit group (we rotate this for precession) -->
+            <g id="orbitGroup" transform="translate(60,100)">
+              <ellipse id="orbitEllipse" cx="80" cy="0" rx="80" ry="52"
+                       fill="none" stroke="rgba(148,163,184,.7)" stroke-width="1.3"
+                       stroke-dasharray="4 3" />
+              <!-- Earth with its spin axis -->
+              <g id="earthGroup" transform="translate(160,0)">
+                <circle r="10" fill="url(#earthGrad)" stroke="#0f172a" stroke-width="1" />
+                <line id="axisLine" x1="0" y1="-14" x2="0" y2="14"
+                      stroke="#e5ecff" stroke-width="1.3" stroke-linecap="round" />
+              </g>
+            </g>
+          </g>
+        </svg>
+        <p class="orbit-caption">
+          View is from above the North Pole. Eccentricity stretches the orbit into an ellipse,
+          tilt rotates Earth’s axis, and precession rotates the ellipse so that perihelion lines up
+          with different seasons.
+        </p>
+      </div>
+
+      <div>
+        <div class="control-block">
+          <h3>Orbital parameters</h3>
+          <label for="eccSlider">Eccentricity (how elliptical the orbit is)</label>
+          <div class="slider-row">
+            <input id="eccSlider" type="range" min="0" max="0.06" step="0.005" value="0.02">
+            <div class="pill">e: <strong><span id="eccVal">0.02</span></strong></div>
+          </div>
+
+          <label for="tiltSlider">Axial tilt (obliquity, degrees)</label>
+          <div class="slider-row">
+            <input id="tiltSlider" type="range" min="22" max="25" step="0.1" value="23.5">
+            <div class="pill">ε: <strong><span id="tiltVal">23.5</span>°</strong></div>
+          </div>
+
+          <label for="precSlider">Precession angle (where in orbit NH summer occurs)</label>
+          <div class="slider-row">
+            <input id="precSlider" type="range" min="0" max="360" step="5" value="90">
+            <div class="pill">ω: <strong><span id="precVal">90</span>°</strong></div>
+          </div>
+        </div>
+
+        <div class="insolation-chip insolation-med" id="insolationChip">
+          <span>Summer insolation at 65°N:</span>
+          <strong id="insolationVal">medium</strong>
+          <span id="insolationPct">(100%)</span>
+        </div>
+        <p class="note">
+          Toy index only: higher eccentricity, larger tilt, and Northern Hemisphere summer at perihelion
+          all push this index up (strong summers → harder to grow big ice sheets).
+        </p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  You can screen-record yourself explaining each lab while adjusting the sliders.  
+  Submit this site link + your video + a short PDF describing the physical meaning of each control.
+</footer>
+
+<script>
+/* ------------ LAB 1: pH MODEL + COLOR STATES ------------ */
+const co2Slider = document.getElementById('co2Slider');
+const tempSlider = document.getElementById('tempSlider');
+const co2Val = document.getElementById('co2Val');
+const tempVal = document.getElementById('tempVal');
+const phValue = document.getElementById('phValue');
+const phTag = document.getElementById('phTag');
+const phCard = document.getElementById('phCard');
+const shellPill = document.getElementById('shellPill');
+
+function computePH(co2, temp){
+  const pH_preindustrial = 8.20;
+  const pH_future = 7.90;
+  const fracCO2 = (co2 - 280) / (800 - 280);
+  let pH = pH_preindustrial + (pH_future - pH_preindustrial) * fracCO2;
+  pH += (20 - temp) * 0.002; // tiny temp effect
+  return pH;
+}
+
+function updatePH(){
+  const co2 = Number(co2Slider.value);
+  const temp = Number(tempSlider.value);
+
+  co2Val.textContent = co2;
+  tempVal.textContent = temp;
+
+  const pH = computePH(co2, temp);
+  const pHtxt = pH.toFixed(2);
+  phValue.textContent = pHtxt;
+
+  let tagText = "";
+  let shellText = "";
+
+  shellPill.classList.remove("ph-safe","ph-risk","ph-bad","status-safe","status-risk","status-bad");
+
+  if (pH > 8.10) {
+    tagText = "Pre-industrial-like";
+    shellText = "Shell habitat: mostly safe for CaCO₃ shells";
+    shellPill.classList.add("ph-safe","status-safe");
+    phCard.style.background = "linear-gradient(to bottom, #0ea5e9, #082f49)";
+  } else if (pH > 8.00) {
+    tagText = "modern ocean (~today)";
+    shellText = "Shell habitat: increasing stress for CaCO₃ shells";
+    shellPill.classList.add("ph-risk","status-risk");
+    phCard.style.background = "linear-gradient(to bottom, #0369a1, #0f172a)";
+  } else {
+    tagText = "more acidified future";
+    shellText = "Shell habitat: higher risk of shell dissolution";
+    shellPill.classList.add("ph-bad","status-bad");
+    phCard.style.background = "linear-gradient(to bottom, #4c1d95, #020617)";
+  }
+
+  phTag.textContent = tagText;
+  shellPill.textContent = shellText;
+  const dot = document.createElement("span");
+  dot.className = "dot";
+  shellPill.prepend(dot);
+}
+
+co2Slider.addEventListener('input', updatePH);
+tempSlider.addEventListener('input', updatePH);
+updatePH();
+
+
+/* ------------ LAB 2: CORAL BLEACHING MODEL ------------ */
+const heatSlider = document.getElementById('heatSlider');
+const daysSlider = document.getElementById('daysSlider');
+const heatVal = document.getElementById('heatVal');
+const daysVal = document.getElementById('daysVal');
+const coralBleached = document.getElementById('coralBleached');
+const reefScene = document.getElementById('reefScene');
+const reefStatusTag = document.getElementById('reefStatusTag');
+const reefStatusText = document.getElementById('reefStatusText');
+const fishEls = document.querySelectorAll('.fish');
+
+function updateReef(){
+  const heat = Number(heatSlider.value);
+  const days = Number(daysSlider.value);
+
+  heatVal.textContent = heat.toFixed(1);
+  daysVal.textContent = days.toFixed(0);
+
+  // Simple stress index: combine anomaly + heatwave duration and map to 0–1
+  let stress = (heat / 1.5) + (days / 45);   // ~bleaching when heat >1°C & long heatwaves
+  stress = Math.max(0, Math.min(stress / 2, 1)); // normalize
+
+  coralBleached.style.opacity = (0.15 + 0.85 * stress).toFixed(2);
+
+  // Water color shifts from deep blue → murkier/purple as stress increases
+  const t = stress;
+  const topColor = t < 0.5 ? '#0f172a' : '#1e293b';
+  const bottomColor = t < 0.5 ? '#022c4a' : '#180827';
+  reefScene.style.background = `linear-gradient(180deg, ${topColor}, ${bottomColor})`;
+
+  // Fish fade out with high stress
+  const fishOpacity = 1 - 0.7 * stress;
+  fishEls.forEach(f => f.style.opacity = fishOpacity);
+
+  // Status copy
+  reefStatusTag.className = 'reef-status-tag';
+  if (stress < 0.3) {
+    reefStatusTag.classList.add('reef-tag-safe');
+    reefStatusTag.textContent = 'Most corals healthy';
+    reefStatusText.textContent =
+      'Occasional warm events, but most symbiotic algae remain and reefs stay colorful.';
+  } else if (stress < 0.7) {
+    reefStatusTag.classList.add('reef-tag-stress');
+    reefStatusTag.textContent = 'Heat stress building';
+    reefStatusText.textContent =
+      'Longer or hotter summers cause partial bleaching and slower growth; recovery is possible if cool periods return.';
+  } else {
+    reefStatusTag.classList.add('reef-tag-bleached');
+    reefStatusTag.textContent = 'Widespread bleaching';
+    reefStatusText.textContent =
+      'Prolonged heatwaves drive severe bleaching. Without relief, many corals die and reef structure begins to erode.';
+  }
+}
+
+heatSlider.addEventListener('input', updateReef);
+daysSlider.addEventListener('input', updateReef);
+updateReef();
+
+
+/* ------------ LAB 3: MILANKOVITCH ORBIT ------------ */
+const eccSlider = document.getElementById('eccSlider');
+const tiltSlider = document.getElementById('tiltSlider');
+const precSlider = document.getElementById('precSlider');
+const eccVal = document.getElementById('eccVal');
+const tiltVal = document.getElementById('tiltVal');
+const precVal = document.getElementById('precVal');
+const orbitEllipse = document.getElementById('orbitEllipse');
+const orbitGroup = document.getElementById('orbitGroup');
+const axisLine = document.getElementById('axisLine');
+const insolationChip = document.getElementById('insolationChip');
+const insolationVal = document.getElementById('insolationVal');
+const insolationPct = document.getElementById('insolationPct');
+
+function updateOrbit(){
+  const e = +eccSlider.value;
+  const tilt = +tiltSlider.value;
+  const omega = +precSlider.value;
+
+  eccVal.textContent  = e.toFixed(2);
+  tiltVal.textContent = tilt.toFixed(1);
+  precVal.textContent = omega.toFixed(0);
+
+  // Stretch ellipse with eccentricity (exaggerated visually)
+  const baseRx = 80;
+  const rx = baseRx * (1 + e * 4);
+  orbitEllipse.setAttribute('rx', rx.toFixed(1));
+
+  // Rotate orbit (precession)
+  orbitGroup.setAttribute('transform', `translate(60,100) rotate(${omega})`);
+
+  // Tilt Earth's axis
+  const tiltOffset = tilt - 23.5;
+  axisLine.setAttribute('transform', `rotate(${tiltOffset})`);
+
+  // Toy insolation index
+  const eccTerm  = 1 + 1.4 * e;
+  const tiltTerm = 1 + 0.04 * (tilt - 23.5);
+  const phaseRad = (omega - 90) * Math.PI / 180; // NH summer at perihelion ~90°
+  const precTerm = 1 + 0.2 * Math.cos(phaseRad);
+  const index = eccTerm * tiltTerm * precTerm;
+  const pct = Math.round(index * 100);
+
+  insolationPct.textContent = `(${pct}%)`;
+  if (pct < 95) {
+    insolationVal.textContent = 'weak';
+    insolationChip.className = 'insolation-chip insolation-weak';
+  } else if (pct < 115) {
+    insolationVal.textContent = 'medium';
+    insolationChip.className = 'insolation-chip insolation-med';
+  } else {
+    insolationVal.textContent = 'strong';
+    insolationChip.className = 'insolation-chip insolation-strong';
+  }
+}
+
+eccSlider.addEventListener('input', updateOrbit);
+tiltSlider.addEventListener('input', updateOrbit);
+precSlider.addEventListener('input', updateOrbit);
+updateOrbit();
+</script>
+</body>
+</html>
